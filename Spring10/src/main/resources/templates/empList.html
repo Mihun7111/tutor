@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>員工列表</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <h2>員工搜尋</h2>
+    
+    <form th:action="@{/view/employees}" method="get">
+        薪資大於: 
+        <select name="low">
+            <option value="0">全部</option>
+            <option th:each="level : ${salaryLevels}" 
+                    th:value="${level}" 
+                    th:text="${level}"
+                    th:selected="${currentLow == level}">
+            </option>
+        </select>
+        名字包含: <input type="text" name="name" th:value="${currentName}" />
+        <button type="submit">查詢</button>
+    </form>
+    <!--  
+    <form th:action="@{/view/employees/low/{low}/name/{name}/page/0/size/{size}(low=${currentLow}, name=${currentName}, size=${currentSize})}" method="get">
+    薪資大於: 
+    <select name="low">
+        <option value="0">全部</option>
+        <option th:each="level : ${salaryLevels}" 
+                th:value="${level}" 
+                th:text="${level}"
+                th:selected="${currentLow == level}">
+        </option>
+    </select>
+    名字包含: <input type="text" name="name" th:value="${currentName}" />
+    <button type="submit">查詢</button>
+	</form>
+    -->
+
+    <hr>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>姓</th>
+                <th>名</th>
+                <th>職稱</th>
+                <th>薪資</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="emp : ${employees.content}">
+			    <td th:text="${emp.employeeid}">ID</td>
+			    <td th:text="${emp.lastName}">Last Name</td>
+			    <td th:text="${emp.firstName}">First Name</td>
+			    <td th:text="${emp.title}">Title</td>
+			    <td th:text="${#numbers.formatCurrency(emp.salary)}">Salary</td>
+			</tr>
+        </tbody>
+    </table>
+
+    <!-- 分頁區塊 -->
+    <div>
+        <span>頁數: [[${currentPage}+1]] / [[${totalPages}]]</span>
+        <div>
+            <a th:if="${currentPage > 0}"
+               th:href="@{/view/employees(page=${currentPage-1}, low=${currentLow}, name=${currentName})}">
+               上一頁
+            </a>
+            <a th:if="${currentPage < totalPages-1}"
+               th:href="@{/view/employees(page=${currentPage+1}, low=${currentLow}, name=${currentName})}">
+               下一頁
+            </a>
+        </div>
+    </div>
+    <!--  
+    <div>
+    <span>頁數: [[${currentPage}+1]] / [[${totalPages}]]</span>
+    <div>
+        <a th:if="${currentPage > 0}"
+           th:href="@{/view/employees/low/{low}/name/{name}/page/{page}/size/{size}(low=${currentLow}, name=${currentName}, page=${currentPage-1}, size=${currentSize})}">
+           上一頁
+        </a>
+        <a th:if="${currentPage < totalPages-1}"
+           th:href="@{/view/employees/low/{low}/name/{name}/page/{page}/size/{size}(low=${currentLow}, name=${currentName}, page=${currentPage+1}, size=${currentSize})}">
+           下一頁
+        </a>
+    </div>
+	</div>
+    -->
+
+</body>
+</html>

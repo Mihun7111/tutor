@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>英語教師預約系統</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; color: #333; }
+        .search-section { background: #f4f4f4; padding: 20px; border-radius: 8px; }
+        .filter-group { margin-bottom: 10px; display: inline-block; margin-right: 15px; }
+        select, input { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+    <div class="search-section">
+        <h2>師資進階搜尋</h2>
+        <form th:action="@{/view/teachers}" method="get">
+            <div class="filter-group">
+                <label>學生年紀：</label>
+                <select name="age">
+                    <option value="">全部</option>
+                    <option value="under_5" th:selected="${currentAge == 'under_5'}">5歲以下</option>
+                    <option value="6_10" th:selected="${currentAge == '6_10'}">6-10歲</option>
+                    <option value="11_18" th:selected="${currentAge == '11_18'}">11-18歲</option>
+                    <option value="19_25" th:selected="${currentAge == '19_25'}">19-25歲</option>
+                    <option value="26_44" th:selected="${currentAge == '26_44'}">26-44歲</option>
+                    <option value="45_64" th:selected="${currentAge == '45_64'}">45-64歲</option>
+                    <option value="65_plus" th:selected="${currentAge == '65_plus'}">65歲以上</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>學習需求：</label>
+                <select name="need">
+                    <option value="">全部</option>
+                    <option value="conversation" th:selected="${currentNeed == 'conversation'}">日常會話</option>
+                    <option value="speaking" th:selected="${currentNeed == 'speaking'}">口說練習</option>
+                    <option value="listening" th:selected="${currentNeed == 'listening'}">聽力強化</option>
+                    <option value="business" th:selected="${currentNeed == 'business'}">商務英文</option>
+                    <option value="abroad" th:selected="${currentNeed == 'abroad'}">出國留學</option>
+                    <option value="TOEFL" th:selected="${currentNeed == 'TOEFL'}">托福檢定</option>
+                    <option value="TOEIC" th:selected="${currentNeed == 'TOEIC'}">多益檢定</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>上課日期：</label>
+                <select name="day">
+                    <option value="">全部</option>
+                    <option value="weekday" th:selected="${currentDay == 'weekday'}">平日</option>
+                    <option value="weekend" th:selected="${currentDay == 'weekend'}">週末</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>偏好時段：</label>
+                <select name="time">
+                    <option value="">全部</option>
+                    <option value="morning_before_12" th:selected="${currentTime == 'morning_before_12'}">上午 (12點前)</option>
+                    <option value="afternoon_12_18" th:selected="${currentTime == 'afternoon_12_18'}">下午 (12-18點)</option>
+                    <option value="evening_18_24" th:selected="${currentTime == 'evening_18_24'}">晚上 (18點後)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>老師國籍：</label>
+                <select name="nation">
+                    <option value="">全部</option>
+                    <option value="Taiwan" th:selected="${currentNation == 'Taiwan'}">台灣</option>
+                    <option value="USA" th:selected="${currentNation == 'USA'}">美國</option>
+                    <option value="Japan" th:selected="${currentNation == 'Japan'}">日本</option>
+                    <option value="Spain" th:selected="${currentNation == 'Spain'}">西班牙</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>最高費用：</label>
+                <input type="number" name="maxFee" th:value="${currentMaxFee}" placeholder="預算..." />
+            </div>
+
+            <button type="submit" style="background: #007bff; color: white; border: none; padding: 8px 15px; cursor: pointer;">搜尋老師</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>講師姓名</th>
+                <th>國籍</th>
+                <th>適合年紀</th>
+                <th>教學需求</th>
+                <th>可上課日</th>
+                <th>時段</th>
+                <th>每小時費用</th>
+                <th style="width: 30%;">自我介紹</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="t : ${teachers.content}">
+                <td th:text="${t.teacherName}"></td>
+                <td th:text="${t.selfIntro}"></td>
+                <td th:text="${t.nationality == 'Taiwan' ? '台灣' : (t.nationality == 'USA' ? '美國' : (t.nationality == 'Japan' ? '日本' : (t.nationality == 'Spain' ? '西班牙' : t.nationality)))}"></td>
+                <td th:text="${t.studentAge}"></td>
+                <td th:text="${t.learningNeed}"></td>
+                <td th:text="${t.availableDays == 'weekday' ? '平日' : (t.availableDays == 'weekend' ? '週末' : (t.availableDays == 'weekday,weekend' ? '平日/週末' : t.availableDays))}"></td>
+                <td th:text="${t.availableTime}"></td>
+                <td th:text="${'$' + t.fee}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px;">
+        <span>頁碼：[[${currentPage + 1}]] / [[${totalPages}]]</span>
+        <div th:if="${totalPages > 0}">
+            <a th:if="${currentPage > 0}" 
+               th:href="@{/view/teachers(page=${currentPage-1}, age=${currentAge}, need=${currentNeed}, day=${currentDay}, time=${currentTime}, nation=${currentNation}, maxFee=${currentMaxFee})}">上一頁</a>
+            
+            <a th:if="${currentPage < totalPages-1}" 
+               th:href="@{/view/teachers(page=${currentPage+1}, age=${currentAge}, need=${currentNeed}, day=${currentDay}, time=${currentTime}, nation=${currentNation}, maxFee=${currentMaxFee})}">下一頁</a>
+        </div>
+    </div>
+
+</body>
+</html>
