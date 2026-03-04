@@ -1,9 +1,11 @@
 package tw.brad.tutor.util;
 
-import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import tw.brad.tutor.entity.TeacherSchedule;
 
 public class TranslationUtils {
     private static final Map<String, String> MAPPINGS = Map.ofEntries(
@@ -32,5 +34,13 @@ public class TranslationUtils {
     public static String translateSingle(String value) {
         if (value == null) return "";
         return MAPPINGS.getOrDefault(value, value);
+    }
+    
+    public boolean hasSchedule(List<TeacherSchedule> schedules, String day, String slot) {
+        if (schedules == null) return false;
+        // 比對資料庫傳回的 weekday 和 timeSlot 是否符合格子的定義
+        return schedules.stream().anyMatch(s -> 
+            s.getWeekday().equalsIgnoreCase(day) && s.getTimeSlot().equalsIgnoreCase(slot)
+        );
     }
 }

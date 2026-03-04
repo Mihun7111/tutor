@@ -1,8 +1,13 @@
 package tw.brad.tutor.entity;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -37,4 +42,9 @@ public class EnglishTeacher {
 
     @Column(name = "self_intro")
     private String selfIntro;
+    
+ // EnglishTeacher.java 內
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", referencedColumnName = "teacher_id", insertable = false, updatable = false)
+    private List<TeacherSchedule> schedules;
 }

@@ -10,6 +10,40 @@
         .search-section { background: #f4f4f4; padding: 20px; border-radius: 8px; }
         .filter-group { margin-bottom: 10px; display: inline-block; margin-right: 15px; }
         select, input { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+        
+		/* 課表容器：預設隱藏，絕對定位在滑鼠附近 */
+		.schedule-tooltip {
+		    display: none;
+		    position: absolute;
+		    background: white;
+		    border: 1px solid #ccc;
+		    padding: 15px;
+		    z-index: 999;
+		    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+		    border-radius: 8px;
+		    width: 350px;
+		}
+		
+		/* 當滑鼠移到該列老師時，顯示課表 */
+		.teacher-row:hover .schedule-tooltip {
+		    display: block;
+		}
+		
+		/* 課表表格樣式 */
+		.mini-calendar { border-collapse: collapse; width: 100%; }
+		.mini-calendar th, .mini-calendar td { 
+		    border: 1px solid #eee; 
+		    padding: 6px; 
+		    text-align: center; 
+		    font-size: 12px;
+		}
+		.mini-calendar th { background: #f8f9fa; }
+		
+		/* 有課時的青綠色方塊 (對應您給的圖) */
+		.active-slot { 
+		    background-color: #4dd0e1 !important; 
+		    border-radius: 2px;
+		}
     </style>
 </head>
 <body>
@@ -144,6 +178,32 @@
 		
 		        <td th:text="${t.fee}"></td>
 		    </tr>
+		    <tr th:each="t : ${teachers.content}" class="teacher-row">
+		        <td style="position: relative; cursor: pointer; color: #007bff;">
+		            查閱時段
+		            <div class="schedule-tooltip">
+		                <h4 style="margin: 0 0 10px 0; color: #333;">教師週課表</h4>
+		                <table class="mini-calendar">
+		                    <thead>
+		                        <tr>
+		                            <th>時段</th>
+		                            <th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th>
+		                        </tr>
+		                    </thead>
+		                    <tbody>
+		                        <tr th:each="slot : ${ {'morning_06_12', 'afternoon_12_18', 'evening_18_24'} }">
+		                            <td th:text="${utils.translateSingle(slot)}" style="font-weight: bold;"></td>
+		                            <td th:each="day : ${ {'Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'} }"
+		                                th:classappend="${utils.hasSchedule(t.schedules, day, slot)} ? 'active-slot' : ''">
+		                            </td>
+		                        </tr>
+		                    </tbody>
+		                </table>
+		                <p style="font-size: 11px; color: #666; margin-top: 8px;">* 青綠色表示老師該時段可預約</p>
+		            </div>
+		        </td>
+		        
+		     </tr>
 		</tbody>
     </table>
 
@@ -161,6 +221,7 @@
 			</a>
         </div>
     </div>
+    
 
 </body>
 </html>
