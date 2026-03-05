@@ -1,4 +1,4 @@
-package tw.brad.tutor.repp;
+package tw.brad.tutor.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

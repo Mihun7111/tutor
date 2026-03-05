@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import tw.brad.tutor.entity.EnglishTeacher;
-import tw.brad.tutor.repp.TeacherRepo;
+import tw.brad.tutor.repo.TeacherRepo;
 import tw.brad.tutor.spec.TeacherSpec;
 import tw.brad.tutor.util.TranslationUtils;
 
