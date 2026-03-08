@@ -2,57 +2,135 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>課程列表</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+    .search-section {
+        margin-bottom: 20px;
+    }
+    .filter-buttons button {
+        margin-right: 10px;
+        padding: 5px 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        cursor: pointer;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+    th {
+        background-color: #f8f8f8;
+    }
+    td ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+    td ul li {
+        margin: 3px 0;
+    }
+</style>
 </head>
 <body>
-	<div class="search-section">
-    <form th:action="@{/view/courses}" method="get">
-        <input type="text" name="name" th:value="${currentName}" placeholder="搜尋老師姓名...">
+    <div class="search-section">
+        <form th:action="@{/view/courses}" method="get">
+            <input type="text" name="teacherName" th:value="${currentTeacherName}" placeholder="搜尋老師姓名...">
 
-        <select name="subject">
-            <option value="">所有科目</option>
-            <option value="1" th:selected="${currentSubject == 1}">英文</option>
-            <option value="2" th:selected="${currentSubject == 2}">程式</option>
-        </select>
+            <div class="filter-buttons">
+                <button type="submit" name="courseName" value="基礎英文">基礎英文</button>
+                <button type="submit" name="courseName" value="英文中級聽力">英文中級聽力</button>
+                <button type="submit" name="courseName" value="Python">Python</button>
+            </div>
 
-        <select name="priceRange">
-            <option value="">所有價格</option>
-            <option value="300-500" th:selected="${currentPrice == '300-500'}">$300 - $500</option>
-            <option value="501-700" th:selected="${currentPrice == '501-700'}">$501 - $700</option>
-            <option value="701-900" th:selected="${currentPrice == '701-900'}">$701 - $900</option>
-        </select>
+            <select name="subject">
+                <option value="">所有科目</option>
+                <option value="1" th:selected="${currentSubject == 1}">英文</option>
+                <option value="2" th:selected="${currentSubject == 2}">程式</option>
+            </select>
 
-        <input type="date" name="date" th:value="${currentDate}">
-        <input type="number" name="hour" th:value="${currentHour}" min="9" max="21" placeholder="小時(9-21)">
+            <select name="priceRange">
+                <option value="">所有價格</option>
+                <option value="300-500" th:selected="${currentPriceRange == '300-500'}">$300 - $500</option>
+                <option value="501-700" th:selected="${currentPriceRange == '501-700'}">$501 - $700</option>
+                <option value="701-900" th:selected="${currentPriceRange == '701-900'}">$701 - $900</option>
+            </select>
 
-        <button type="submit">立即搜尋</button>
-    </form>
-</div>
+            <input type="date" name="date" th:value="${currentDate}">
+            <input type="number" name="hour" th:value="${currentHour}" min="9" max="21" placeholder="小時(9-21)">
 
-<table>
-    <thead>
-        <tr>
-            <th>老師</th>
-            <th>科目</th>
-            <th>等級</th>
-            <th>介紹</th>
-            <th>上課時間</th>
-            <th>價格</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="c : ${courses}">
-            <td th:text="${c.user.name}"></td>
-            <td th:text="${c.subject == 1 ? '英文' : '程式'}"></td>
-            <td th:text="${c.level == 1 ? '初級' : (c.level == 2 ? '中級' : '高級')}"></td>
-            <td th:text="${c.description}"></td>
-            <td>
-                <span th:text="${currentDate}"></span> 
-                <span th:text="${currentHour + ':00'}"></span>
-            </td>
-            <td th:text="${'$' + c.price}"></td>
-        </tr>
-    </tbody>
-</table>
+            <button type="submit">立即搜尋</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>老師</th>
+                <th>課程標題</th>
+                <th>科目</th>
+                <th>等級</th>
+                <th>介紹</th>
+                <th>上課時間</th>
+                <th>價格</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${courses}">
+                <td th:text="${c.user.name}"></td>
+                <td th:text="${c.name}"></td>
+                <td th:text="${c.subject == 1 ? '英文' : '程式'}"></td>
+                <td th:text="${c.level == 1 ? '初級' : (c.level == 2 ? '中級' : '高級')}"></td>
+                <td th:text="${c.description}"></td>
+                <td>
+                    <ul>
+                        <li th:each="lesson : ${c.lessons}">
+                            <span th:text="${lesson.date}"></span>
+                            <span th:text="${lesson.hour + ':00'}"></span>
+                        </li>
+                    </ul>
+                </td>
+                <td th:text="${'$' + c.price}"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+	<!-- 分頁導航 -->
+	<div class="pagination">
+	    <ul style="list-style-type:none; display:flex; justify-content:center; padding:0;">
+	        <!-- 上一頁 -->
+	        <li th:if="${currentPage > 0}" style="margin:0 5px;">
+	            <a th:href="@{/view/courses(page=${currentPage - 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, level=${currentLevel}, priceRange=${currentPriceRange}, date=${currentDate}, hour=${currentHour})}">
+	                上一頁
+	            </a>
+	        </li>
+	
+	        <!-- 頁碼 -->
+	        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" style="margin:0 5px;">
+	            <a th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, level=${currentLevel}, priceRange=${currentPriceRange}, date=${currentDate}, hour=${currentHour})}"
+	               th:text="${i + 1}"
+	               th:classappend="${i == currentPage} ? 'active' : ''">
+	            </a>
+	        </li>
+	
+	        <!-- 下一頁 -->
+	        <li th:if="${currentPage < totalPages - 1}" style="margin:0 5px;">
+	            <a th:href="@{/view/courses(page=${currentPage + 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, level=${currentLevel}, priceRange=${currentPriceRange}, date=${currentDate}, hour=${currentHour})}">
+	                下一頁
+	            </a>
+	        </li>
+	    </ul>
+	</div>
+
+    
 </body>
 </html>

@@ -24,7 +24,10 @@ public class Course {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tutor_id", nullable = false)
     private User user; // 關聯到 users 表獲取老師姓名
-
+    
+    @Column(name = "name", length = 200)
+    private String name; // 課程標題
+    
     @Column(name = "subject")
     private Integer subject; // 1 英文 / 2 程式
 

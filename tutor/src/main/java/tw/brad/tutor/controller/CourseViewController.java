@@ -25,7 +25,8 @@ public class CourseViewController {
  @GetMapping("/view/courses")
  public String searchCourses(
          @RequestParam(defaultValue = "0") int page,
-         @RequestParam(required = false) String name,
+         @RequestParam(required = false) String teacherName,
+         @RequestParam(required = false) String courseName,
          @RequestParam(required = false) Integer subject,
          @RequestParam(required = false) Integer level,
          @RequestParam(required = false) String priceRange,
@@ -33,11 +34,10 @@ public class CourseViewController {
          @RequestParam(required = false) Integer hour,
          Model model) {
 
-     Pageable pageable = PageRequest.of(page, 10); // 每頁10筆
-     
-     // 呼叫動態篩選器
+     Pageable pageable = PageRequest.of(page, 10);
+
      Page<Course> coursePage = courseRepo.findAll(
-         CourseSpec.filterCourses(name, subject, level, priceRange, date, hour), 
+         CourseSpec.filterCourses(teacherName, courseName, subject, level, priceRange, date, hour),
          pageable
      );
 
@@ -45,14 +45,15 @@ public class CourseViewController {
      model.addAttribute("totalPages", coursePage.getTotalPages());
      model.addAttribute("currentPage", page);
 
-     // 保留狀態（回傳給前端 form 使用）
-     model.addAttribute("currentName", name);
+     // 保留狀態
+     model.addAttribute("currentTeacherName", teacherName);
+     model.addAttribute("currentCourseName", courseName);
      model.addAttribute("currentSubject", subject);
      model.addAttribute("currentLevel", level);
      model.addAttribute("currentPriceRange", priceRange);
      model.addAttribute("currentDate", date);
      model.addAttribute("currentHour", hour);
 
-     return "courseList"; // 返回您之前預覽的 HTML 頁面
+     return "courseList";
  }
 }
