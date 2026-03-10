@@ -1,136 +1,270 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>課程列表</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-    }
-    .search-section {
-        margin-bottom: 20px;
-    }
-    .filter-buttons button {
-        margin-right: 10px;
-        padding: 5px 10px;
-        background-color: #f0f0f0;
-        border: 1px solid #ccc;
-        cursor: pointer;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-    }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: center;
-    }
-    th {
-        background-color: #f8f8f8;
-    }
-    td ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
-    td ul li {
-        margin: 3px 0;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>找尋理想老師 - 課程列表</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet"/>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FF8E53",
+                        secondary: "#6C63FF",
+                        available: "#4ADE80",
+                        booked: "#C084FC",
+                        unavailable: "#F3F4F6",
+                    },
+                    fontFamily: { sans: ["Quicksand", "sans-serif"] },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #f8fafc; }
+        
+        /* 搜尋區塊樣式 */
+        .search-section {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+        }
+
+        /* 表格樣式 */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { background-color: #f1f5f9; color: #475569; font-weight: 700; padding: 12px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 16px; border-bottom: 1px solid #e2e8f0; text-align: center; background: white; }
+        tr:hover td { background-color: #f8fafc; }
+
+        /* 浮動課表視窗 (Tooltip) */
+        #floatingCalendar {
+            display: none;
+            position: absolute;
+            z-index: 9999;
+            width: 450px;
+            pointer-events: none; /* 防止滑鼠進入視窗導致閃爍 */
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            border: 2px solid #FF8E53;
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+
+        .grid-cell { 
+            height: 14px; 
+            border-radius: 2px; 
+            transition: background-color 0.3s ease;
+        }
+    </style>
 </head>
-<body>
-    <div class="search-section">
-        <form th:action="@{/view/courses}" method="get">
-            <input type="text" name="teacherName" th:value="${currentTeacherName}" placeholder="搜尋老師姓名...">
+<body class="p-8">
 
-            <div class="filter-buttons">
-                <button type="submit" name="courseName" value="基礎英文">基礎英文</button>
-                <button type="submit" name="courseName" value="英文中級聽力">英文中級聽力</button>
-                <button type="submit" name="courseName" value="Python">Python</button>
-            </div>
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-4xl">search_check</span>
+            找尋理想老師
+        </h1>
 
-            <select name="subject">
-                <option value="">所有科目</option>
-                <option value="1" th:selected="${currentSubject == 1}">英文</option>
-                <option value="2" th:selected="${currentSubject == 2}">程式</option>
-            </select>
+        <div class="search-section">
+            <form th:action="@{/view/courses}" method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600 mb-1">老師姓名</label>
+                    <input type="text" name="teacherName" th:value="${currentTeacherName}" 
+                           class="w-full rounded-lg border-slate-200 focus:border-primary focus:ring-primary" placeholder="輸入姓名...">
+                </div>
 
-            <select name="priceRange">
-                <option value="">所有價格</option>
-                <option value="300-500" th:selected="${currentPriceRange == '300-500'}">$300 - $500</option>
-                <option value="501-700" th:selected="${currentPriceRange == '501-700'}">$501 - $700</option>
-                <option value="701-900" th:selected="${currentPriceRange == '701-900'}">$701 - $900</option>
-            </select>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600 mb-1">課程關鍵字</label>
+                    <input type="text" name="courseName" th:value="${currentCourseName}" 
+                           class="w-full rounded-lg border-slate-200 focus:border-primary focus:ring-primary" placeholder="搜尋課程...">
+                </div>
 
-            <input type="date" name="date" th:value="${currentDate}">
-            <input type="number" name="hour" th:value="${currentHour}" min="9" max="21" placeholder="小時(9-21)">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600 mb-1">科目</label>
+                    <select name="subject" class="w-full rounded-lg border-slate-200 focus:border-primary focus:ring-primary">
+                        <option value="">全部</option>
+                        <option value="1" th:selected="${currentSubject == 1}">英文</option>
+                        <option value="2" th:selected="${currentSubject == 2}">程式</option>
+                    </select>
+                </div>
 
-            <button type="submit">立即搜尋</button>
-        </form>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600 mb-1">預算區間</label>
+                    <select name="priceRange" class="w-full rounded-lg border-slate-200 focus:border-primary focus:ring-primary">
+                        <option value="">不限價格</option>
+                        <option value="300-500" th:selected="${currentPriceRange == '300-500'}">$300 - $500</option>
+                        <option value="501-700" th:selected="${currentPriceRange == '501-700'}">$501 - $700</option>
+                        <option value="701-900" th:selected="${currentPriceRange == '701-900'}">$701 - $900</option>
+                    </select>
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-primary hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-lg shadow-orange-100">
+                        <span class="material-symbols-outlined">filter_alt</span> 執行搜尋
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-slate-200 shadow-sm bg-white">
+            <table>
+                <thead>
+                    <tr>
+                        <th>老師</th>
+                        <th>課程名稱</th>
+                        <th>科目 / 等級</th>
+                        <th>課程介紹</th>
+                        <th>價格</th>
+                        <th>上課時間表</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c : ${courses}">
+                        <td class="font-bold text-slate-700" th:text="${c.user.name}"></td>
+                        <td th:text="${c.name}"></td>
+                        <td>
+                            <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-bold" th:text="${c.subject == 1 ? '英文' : '程式'}"></span>
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs" th:text="${c.level == 1 ? '初級' : (c.level == 2 ? '中級' : '高級')}"></span>
+                        </td>
+                        <td class="text-sm text-slate-500 text-left max-w-xs truncate" th:text="${c.description}"></td>
+                        <td class="text-orange-600 font-bold" th:text="${'$' + c.price}"></td>
+                        <td>
+                            <div class="inline-flex items-center gap-1 text-secondary cursor-help border-b border-dashed border-secondary pb-1"
+                                 th:onmouseenter="|showCalendar(event, '${c.user.name}', ${c.user.id})|"
+                                 onmousemove="moveCalendar(event)"
+                                 onmouseleave="hideCalendar()">
+                                <span class="material-symbols-outlined text-sm">event_available</span>
+                                <span class="text-sm font-semibold">滑過查看</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-8 flex justify-center gap-2" th:if="${totalPages > 0}">
+            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 hover:bg-slate-50'"
+               class="px-4 py-2 rounded-lg border border-slate-200 font-bold transition-all shadow-sm">
+            </a>
+        </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>老師</th>
-                <th>課程標題</th>
-                <th>科目</th>
-                <th>等級</th>
-                <th>介紹</th>
-                <th>上課時間</th>
-                <th>價格</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="c : ${courses}">
-                <td th:text="${c.user.name}"></td>
-                <td th:text="${c.name}"></td>
-                <td th:text="${c.subject == 1 ? '英文' : '程式'}"></td>
-                <td th:text="${c.level == 1 ? '初級' : (c.level == 2 ? '中級' : '高級')}"></td>
-                <td th:text="${c.description}"></td>
-                <td>
-                    <ul>
-                        <li th:each="lesson : ${c.lessons}">
-                            <span th:text="${lesson.date}"></span>
-                            <span th:text="${lesson.hour + ':00'}"></span>
-                        </li>
-                    </ul>
-                </td>
-                <td th:text="${'$' + c.price}"></td>
-            </tr>
-        </tbody>
-    </table>
-    
-	<!-- 分頁導航 -->
-	<div class="pagination">
-	    <ul style="list-style-type:none; display:flex; justify-content:center; padding:0;">
-	        <!-- 上一頁 -->
-	        <li th:if="${currentPage > 0}" style="margin:0 5px;">
-	            <a th:href="@{/view/courses(page=${currentPage - 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, level=${currentLevel}, priceRange=${currentPriceRange}, date=${currentDate}, hour=${currentHour})}">
-	                上一頁
-	            </a>
-	        </li>
-	
-	        <!-- 頁碼 -->
-	        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}" style="margin:0 5px;">
-	            <a th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, level=${currentLevel}, priceRange=${currentPriceRange}, date=${currentDate}, hour=${currentHour})}"
-	               th:text="${i + 1}"
-	               th:classappend="${i == currentPage} ? 'active' : ''">
-	            </a>
-	        </li>
-	
-	        <!-- 下一頁 -->
-	        <li th:if="${currentPage < totalPages - 1}" style="margin:0 5px;">
-	            <a th:href="@{/view/courses(page=${currentPage + 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, level=${currentLevel}, priceRange=${currentPriceRange}, date=${currentDate}, hour=${currentHour})}">
-	                下一頁
-	            </a>
-	        </li>
-	    </ul>
-	</div>
+    <div id="floatingCalendar">
+        <header class="p-4 bg-gradient-to-r from-primary to-orange-400 text-white">
+            <h3 class="text-lg font-bold flex items-center gap-2">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span id="calTeacherName">老師週課表</span>
+            </h3>
+        </header>
+        <div class="p-4">
+            <div class="grid grid-cols-8 gap-1 text-[10px] text-slate-400 mb-2">
+                <div class="h-6"></div>
+                <th:block th:each="d : ${#numbers.sequence(1, 7)}">
+                    <div class="text-center font-bold text-slate-600" 
+                         th:text="${d == 1 ? '一' : (d == 2 ? '二' : (d == 3 ? '三' : (d == 4 ? '四' : (d == 5 ? '五' : (d == 6 ? '六' : '日')))))}">
+                    </div>
+                </th:block>
 
-    
+                <th:block th:each="h : ${#numbers.sequence(9, 21)}">
+                    <div class="text-right pr-1 self-center" th:text="${(h < 10 ? '0' + h : h) + ':00'}"></div>
+                    <th:block th:each="d : ${#numbers.sequence(1, 7)}">
+                        <div class="grid-cell bg-unavailable" th:attr="data-day=${d}, data-hour=${h}"></div>
+                    </th:block>
+                </th:block>
+            </div>
+            
+            <div class="flex gap-4 text-[10px] justify-center pt-3 border-t border-slate-100">
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-available rounded-full shadow-sm"></span>可預約</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-booked rounded-full shadow-sm"></span>已被訂</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-unavailable rounded-full shadow-sm"></span>不開放</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const floatingCal = document.getElementById('floatingCalendar');
+        const calName = document.getElementById('calTeacherName');
+
+        /**
+         * 顯示課表並抓取 AJAX 資料
+         */
+        async function showCalendar(e, name, teacherId) {
+            calName.innerText = name + " 的週課表";
+            floatingCal.style.display = 'block';
+            moveCalendar(e);
+
+            // 1. 先重置所有格子為「不開放」
+            resetGrid();
+
+            // 2. 向後端 API 請求該老師的預約狀態
+            try {
+                const response = await fetch(`/view/teacher_schedule/${teacherId}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const scheduleData = await response.json();
+
+                // 3. 填色：資料格式預期為 Map<Day, Map<Hour, ColorClass>>
+                Object.keys(scheduleData).forEach(day => {
+                    const hours = scheduleData[day];
+                    Object.keys(hours).forEach(hour => {
+                        const colorClass = hours[hour];
+                        // 找到對應的 Cell
+                        const cell = document.querySelector(`.grid-cell[data-day="${day}"][data-hour="${hour}"]`);
+                        if (cell) {
+                            cell.classList.remove('bg-available', 'bg-booked', 'bg-unavailable');
+                            cell.classList.add(colorClass);
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error("抓取課表資料失敗:", err);
+            }
+        }
+
+        /**
+         * 視窗跟隨鼠標
+         */
+        function moveCalendar(e) {
+            const offsetX = 20;
+            const offsetY = 20;
+            const tooltipWidth = 450;
+            
+            let posX = e.pageX + offsetX;
+            let posY = e.pageY + offsetY;
+
+            // 邊界檢查：避免超出右側視窗
+            if (posX + tooltipWidth > window.innerWidth) {
+                posX = e.pageX - tooltipWidth - offsetX;
+            }
+
+            floatingCal.style.left = posX + 'px';
+            floatingCal.style.top = posY + 'px';
+        }
+
+        /**
+         * 隱藏課表
+         */
+        function hideCalendar() {
+            floatingCal.style.display = 'none';
+        }
+
+        /**
+         * 重置網格狀態
+         */
+        function resetGrid() {
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.className = 'grid-cell bg-unavailable';
+            });
+        }
+    </script>
 </body>
 </html>
