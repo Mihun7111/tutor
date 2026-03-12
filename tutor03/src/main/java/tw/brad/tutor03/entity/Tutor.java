@@ -1,4 +1,4 @@
-package tw.brad.tutor01.entity;
+package tw.brad.tutor03.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,8 +13,9 @@ import lombok.Data;
 @Table(name = "tutors")
 @Data
 public class Tutor {
+
     @Id
-    private Long id; // 與 users.id 共享
+    private Long id; // 與 users.id 共享（@MapsId）
 
     @OneToOne
     @MapsId
@@ -22,22 +23,22 @@ public class Tutor {
     private User user;
 
     @Column(length = 255)
-    private String headline; // 標題：如「TESL認證英語教師...」
+    private String headline; // 吸睛標題，如「TESL認證英語教師」
 
     @Column(name = "avatar_url", length = 500)
     private String avatarUrl;
 
     @Column(columnDefinition = "TEXT")
-    private String intro;
+    private String intro; // 自我介紹
 
     @Column(length = 500)
-    private String certificate;
+    private String certificate; // 專業證照
 
     @Column(name = "video_url_1", length = 500)
-    private String videoUrl1; // 影片URL1：如自我介紹影片
+    private String videoUrl1; // 自我介紹影片
 
     @Column(name = "video_url_2", length = 500)
-    private String videoUrl2; // 影片URL2：如教學示範影片
+    private String videoUrl2; // 教學示範影片
 
     @Column(name = "bank_code", length = 10)
     private String bankCode;

@@ -1,7 +1,5 @@
 package tw.brad.tutor01.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,27 +12,21 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "courses")
 @Data
-public class Review {
+public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User student; // 評價的學生
+    @JoinColumn(name = "tutor_id")
+    private Tutor tutor;
 
-    @Column(name = "course_id", nullable = false)
-    private Long courseId; // 關聯課程 ID
-
-    @Column(nullable = false)
-    private Integer rating; // 1-5 分
-
-    @Column(length = 1000)
-    private String comment;
-
-    @Column(name = "updated_at", updatable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
-
+    private String name;        // 課程名稱 (如: 雅思衝刺)
+    
+    @Column(columnDefinition = "TEXT")
+    private String description; // 課程介紹
+    
+    private Integer price;      // 課程價格
 }

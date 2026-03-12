@@ -1,4 +1,4 @@
-package tw.brad.tutor01.controller;
+package tw.brad.tutor03.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import tw.brad.tutor01.entity.Course;
-import tw.brad.tutor01.entity.Review;
-import tw.brad.tutor01.entity.Tutor;
-import tw.brad.tutor01.entity.TutorSchedule;
-import tw.brad.tutor01.service.TutorService;
+import tw.brad.tutor03.entity.Course;
+import tw.brad.tutor03.entity.Review;
+import tw.brad.tutor03.entity.Tutor;
+import tw.brad.tutor03.entity.TutorSchedule;
+import tw.brad.tutor03.service.TutorService;
 
 @Controller
 @RequestMapping("/tutor")
@@ -76,7 +76,7 @@ public class TutorController {
         model.addAttribute("schedules", schedules);
         model.addAttribute("avgRating", String.format("%.1f", avgRating));
 
-        return "tutor_profile4"; // 回傳 templates/tutor_profile.html
+        return "tutorProfile3"; // 回傳 templates/tutor_profile.html
     }
 //    // AJAX 非同步更新
 //    @GetMapping("/api/course/{courseId}")

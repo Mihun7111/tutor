@@ -62,24 +62,24 @@
 			<section class="mb-4">
 			    <h5 class="fw-bold"><i class="fa-solid fa-book me-2"></i>選擇你想上的課程</h5>
 			    <div class="list-group">
-			        <a th:each="course : ${courses}" 
-			           th:href="@{'/tutor/' + ${tutor.id} + '?courseId=' + ${course.id}}"
-			           th:classappend="${selectedCourse != null && selectedCourse.id == course.id} ? 'active' : ''"
-			           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-			            <span th:text="${course.name}">課程名稱</span>
-			            <span class="badge bg-primary rounded-pill" th:text="${'$ ' + course.price}">$ 500</span>
-			        </a>
-			    </div>
+				    <button th:each="course : ${courses}" 
+				            th:onclick="'loadCourseData(' + ${course.id} + ')'"
+				            class="list-group-item list-group-item-action course-btn"
+				            th:id="'course-btn-' + ${course.id}">
+				        <span th:text="${course.name}">課程名稱</span>
+				    </button>
+				</div>
 			</section>
 			
 			<section class="card mb-5 border-0 shadow-sm" th:if="${selectedCourse != null}">
-			    <div class="card-body">
-			        <h4 class="card-title fw-bold" th:text="${selectedCourse.name}">課程名稱</h4>
-			        <p class="card-text text-secondary" th:text="${selectedCourse.description}">這裡會顯示課程介紹...</p>
-			        <div class="alert alert-info py-2">
-			            <strong>單堂價格：</strong> <span th:text="${selectedCourse.price}">500</span> 元
-			        </div>
-			    </div>
+				<div id="course-detail-section" class="mt-4">
+				    <h4 id="display-course-name">請選擇課程</h4>
+				    <p id="display-course-desc" class="text-secondary"></p>
+				    <div class="alert alert-info">價格：<span id="display-course-price">-</span> 元</div>
+				</div>
+				
+				<div id="review-container">
+				</div>
 			</section>
 
             <section>
@@ -136,6 +136,49 @@
         <p>© 2026 老師個人化頁面系統</p>
     </div>
 </footer>
+	<script type="text/javascript">
+	function loadCourseData(courseId) {
+	    // 1. 發送 Fetch 請求
+	    fetch(`/tutor/api/course/${courseId}`)
+	        .then(response => response.json())
+	        .then(data => {
+	            const course = data.course;
+	            const reviews = data.reviews;
+
+	            // 2. 更新課程資訊
+	            document.getElementById('display-course-name').innerText = course.name;
+	            document.getElementById('display-course-desc').innerText = course.description;
+	            document.getElementById('display-course-price').innerText = course.price;
+
+	            // 3. 更新評價列表
+	            const reviewContainer = document.getElementById('review-container');
+	            reviewContainer.innerHTML = ''; // 清空舊評價
+
+	            if (reviews.length === 0) {
+	                reviewContainer.innerHTML = '<p class="text-muted text-center">目前尚無評價。</p>';
+	            } else {
+	                reviews.forEach(review => {
+	                    const reviewHtml = `
+	                        <div class="review-card border-bottom py-3">
+	                            <div class="d-flex justify-content-between">
+	                                <strong>${review.student.name}</strong>
+	                                <span class="text-warning">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+	                            </div>
+	                            <p class="mb-1">${review.comment}</p>
+	                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+	                        </div>
+	                    `;
+	                    reviewContainer.innerHTML += reviewHtml;
+	                });
+	            }
+
+	            // 4. 更新按鈕選取狀態 (UI 點亮)
+	            document.querySelectorAll('.course-btn').forEach(btn => btn.classList.remove('active'));
+	            document.getElementById('course-btn-' + courseId).classList.add('active');
+	        })
+	        .catch(error => console.error('Error fetching course data:', error));
+	}
+	</script>
 
 </body>
 </html>
