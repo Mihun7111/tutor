@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>課程媒合系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        body { font-family: 'Quicksand', sans-serif; }
+        .bg-available { background-color: #4ADE80 !important; } /* 綠色: 有空 */
+        .bg-unavailable { background-color: #F3F4F6 !important; } /* 灰色: 沒空 */
+    </style>
+</head>
+<body class="bg-slate-50 p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-sm p-8 mb-8 border border-slate-100">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="material-symbols-outlined text-orange-400">search</span>
+                精準課程搜尋
+            </h2>
+            
+            <form th:action="@{/view/courses}" method="get" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">老師姓名</label>
+                    <input type="text" name="teacherName" th:value="${currentTeacherName}" 
+                           class="w-full rounded-xl border-slate-200 focus:ring-orange-400" placeholder="搜尋老師...">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">課程科目</label>
+                    <select name="subject" class="w-full rounded-xl border-slate-200">
+                        <option value="">全部科目</option>
+                        <option value="11" th:selected="${currentSubject == 11}">國小-低年級</option>
+                        <option value="12" th:selected="${currentSubject == 12}">國小-中年級</option>
+                        <option value="13" th:selected="${currentSubject == 13}">國小-高年級</option>
+                        <option value="21" th:selected="${currentSubject == 21}">全民英檢(GEPT)</option>
+                        <option value="22" th:selected="${currentSubject == 22}">劍橋兒童(YLE)</option>
+                        <option value="31" th:selected="${currentSubject == 31}">其他專業課程</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">希望星期</label>
+                    <select name="weekday" class="w-full rounded-xl border-slate-200">
+                        <option value="">不限日期</option>
+                        <option th:each="d : ${#numbers.sequence(1, 7)}" 
+                                th:value="${d}" 
+                                th:text="${'星期' + (d==1?'一':d==2?'二':d==3?'三':d==4?'四':d==5?'五':d==6?'六':'日')}"
+                                th:selected="${currentWeekday == d}"></option>
+                    </select>
+                </div>
+
+				<div>
+				    <label class="block text-sm font-bold text-slate-600 mb-2">希望時段</label>
+				    <select name="timeSlot" class="w-full rounded-xl border-slate-200 focus:ring-orange-400">
+				        <option value="">不限時段</option>
+				        <option value="morning" th:selected="${currentTimeSlot == 'morning'}">上午 (09:00 - 13:00)</option>
+				        <option value="afternoon" th:selected="${currentTimeSlot == 'afternoon'}">下午 (13:00 - 17:00)</option>
+				        <option value="evening" th:selected="${currentTimeSlot == 'evening'}">晚上 (17:00 - 21:00)</option>
+				    </select>
+				</div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-orange-400 hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-xl transition-all">
+                        立即篩選
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-6 py-4 font-bold text-slate-600">授課老師</th>
+                        <th class="px-6 py-4 font-bold text-slate-600">課程名稱</th>
+                        <th class="px-6 py-4 font-bold text-slate-600">課程介紹</th>
+                        <th class="px-6 py-4 font-bold text-slate-600">單堂價格</th>
+                        <th class="px-6 py-4 font-bold text-slate-600">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr th:each="c : ${courses}" class="hover:bg-slate-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <img th:src="${c.avatarUrl != null ? c.avatarUrl : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + c.teacherName}" 
+                                     class="w-12 h-12 rounded-2xl object-cover shadow-sm">
+                                <div>
+                                    <div class="font-bold text-slate-800" th:text="${c.teacherName}"></div>
+                                    <div class="text-xs text-orange-500 font-semibold" th:text="${c.headline}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-700" th:text="${c.courseName}"></div>
+                            <span class="inline-block px-2 py-1 rounded-md bg-blue-50 text-blue-600 text-[10px] font-bold mt-1" 
+                                  th:text="${c.subject == 11 ? '低年級' : (c.subject == 31 ? '其他' : '一般')}"></span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-500 max-w-xs truncate" th:text="${c.description}"></td>
+                        <td class="px-6 py-4">
+                            <span class="text-lg font-bold text-slate-800" th:text="'$' + ${c.price}"></span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button th:onclick="'openScheduleModal(' + ${c.id} + ')'" 
+                                    class="text-sm font-bold text-white bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-xl transition-all">
+                                查看課表
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-8 flex justify-center gap-2">
+            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+               th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, subject=${currentSubject}, weekday=${currentWeekday}, hour=${currentHour})}"
+               th:text="${i + 1}"
+               th:class="${i == currentPage} ? 'px-4 py-2 bg-orange-400 text-white rounded-xl font-bold' : 'px-4 py-2 bg-white text-slate-600 rounded-xl hover:bg-slate-100 transition-all'">
+            </a>
+        </div>
+    </div>
+
+    <div id="scheduleModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[40px] shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <header class="p-8 flex justify-between items-center border-b border-slate-100">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800">老師每週排班表</h3>
+                    <p class="text-slate-500 text-sm mt-1">綠色區塊為老師可上課時段</p>
+                </div>
+                <button onclick="closeModal()" class="w-12 h-12 rounded-2xl hover:bg-slate-100 flex items-center justify-center transition-all">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+            
+            <div class="p-8">
+                <div class="grid grid-cols-8 gap-2">
+                    <div class="h-10"></div>
+                    <div th:each="day : ${#strings.arraySplit('一,二,三,四,五,六,日', ',')}" 
+                         class="h-10 flex items-center justify-center font-bold text-slate-400 text-xs uppercase" th:text="${day}"></div>
+                    
+                    <th:block th:each="h : ${#numbers.sequence(9, 21)}">
+                        <div class="flex items-center justify-end pr-3 text-[10px] font-bold text-slate-400" th:text="${h + ':00'}"></div>
+                        <div th:each="d : ${#numbers.sequence(1, 7)}" 
+                             th:data-day="${d}" th:data-hour="${h}"
+                             class="grid-cell h-12 rounded-xl bg-unavailable border border-white transition-all"></div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 開啟彈窗並抓取資料
+        async function openScheduleModal(courseId) {
+            const modal = document.getElementById('scheduleModal');
+            modal.classList.remove('hidden');
+            
+            // 重置所有格子為不可用 (灰色)
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.classList.remove('bg-available');
+                cell.classList.add('bg-unavailable');
+            });
+
+            try {
+                // 向後端 API 請求課表 (此路徑對應之前 Controller 的寫法)
+                const response = await fetch(`/view/teacher_schedule/${courseId}`);
+                const scheduleMap = await response.json();
+
+                // 根據回傳的 Map 染色
+                for (const [day, hours] of Object.entries(scheduleMap)) {
+                    hours.forEach(hour => {
+                        const cell = document.querySelector(`.grid-cell[data-day="${day}"][data-hour="${hour}"]`);
+                        if (cell) {
+                            cell.classList.remove('bg-unavailable');
+                            cell.classList.add('bg-available');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("無法取得課表:", error);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('scheduleModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
