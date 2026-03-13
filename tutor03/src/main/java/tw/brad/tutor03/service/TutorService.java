@@ -42,7 +42,6 @@ public class TutorService {
      * 取得特定老師的所有開放時段，並依照星期與小時排序
      */
     public List<TutorSchedule> findSchedulesByTutorId(Long tutorId) {
-        // 建議在 Repository 寫一個依據 tutorId 查詢的方法
         return scheduleRepo.findByTutorIdOrderByWeekdayAscHourAsc(tutorId);
     }
 

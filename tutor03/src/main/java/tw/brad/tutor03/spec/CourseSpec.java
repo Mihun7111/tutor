@@ -51,27 +51,26 @@ public class CourseSpec {
             }
             // 6. 加入每週時間搜尋邏輯
             if (weekday != null || (timeSlot != null && !timeSlot.isEmpty())) {
-            	// 這裡的路徑：Course -> tutor -> user -> schedules
-                // 注意：你的 schedules 是定義在 User 實體中
-                Join<Object, Object> scheduleJoin = root.join("tutor").join("user").join("schedules");
-                
+                // 路徑：Course -> Tutor -> TutorSchedule
+                Join<Object, Object> scheduleJoin = root.join("tutor").join("schedules");
+
                 if (weekday != null) {
                     predicates.add(builder.equal(scheduleJoin.get("weekday"), weekday));
                 }
                 if (timeSlot != null && !timeSlot.isEmpty()) {
                     switch (timeSlot) {
-                        case "morning": // 9-13
+                        case "morning": // 9-12
                             predicates.add(builder.between(scheduleJoin.get("hour"), 9, 12));
                             break;
-                        case "afternoon": // 13-17
+                        case "afternoon": // 13-16
                             predicates.add(builder.between(scheduleJoin.get("hour"), 13, 16));
                             break;
-                        case "evening": // 17-21
+                        case "evening": // 17-20
                             predicates.add(builder.between(scheduleJoin.get("hour"), 17, 20));
                             break;
                     }
-                } 
-                // 避免同一個課程因為有多個符合的時段而出現重複結果
+                }
+                // 避免同一個課程因為多個時段而重複
                 query.distinct(true);
             }
 

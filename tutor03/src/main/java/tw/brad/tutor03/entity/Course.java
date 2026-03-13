@@ -33,6 +33,7 @@ public class Course {
      * 檢定升學 — 21: GEPT, 22: YLE, 23: 國中先修
      * 其他     — 31: 其他
      */
+    
     @Column(nullable = false)
     private Integer subject;
 
