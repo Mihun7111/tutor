@@ -11,7 +11,7 @@ import tw.brad.tutor03.entity.Course;
 
 public class CourseSpec {
     public static Specification<Course> filterCourses(
-            String teacherName, String courseName, Integer subject, String priceRange, 
+            String teacherName, String courseName, Integer subjectCategory, Integer subject, String priceRange, 
             Integer weekday, String timeSlot) {
 
         return (root, query, builder) -> {
@@ -33,9 +33,15 @@ public class CourseSpec {
                 predicates.add(builder.like(root.get("name"), "%" + courseName + "%"));
             }
 
-            // 4. 科目代碼精確搜尋 (11, 12, 21...)
+            // 4. 科目邏輯修改：
+            // 如果選了具體科目 (如 11, 21)
             if (subject != null) {
                 predicates.add(builder.equal(root.get("subject"), subject));
+            } 
+            // 如果只選了大類別 (如 10 代表年級課程, 20 代表檢定升學)
+            else if (subjectCategory != null) {
+                // 搜尋該開頭的代碼，例如 10~19 之間
+                predicates.add(builder.between(root.get("subject"), subjectCategory, subjectCategory + 9));
             }
 
             // 5. 價格區間過濾 (格式: "min-max")

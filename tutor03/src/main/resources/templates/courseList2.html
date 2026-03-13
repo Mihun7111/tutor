@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>課程列表</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+    th { background-color: #f8f8f8; }
+    .filter-buttons button { margin-right: 10px; padding: 5px 10px; cursor: pointer; }
+    .pagination ul { list-style-type:none; display:flex; justify-content:center; padding:0; }
+    .pagination li { margin:0 5px; }
+    .pagination a.active { font-weight:bold; color:#FF8E53; }
+
+    .bg-available { background-color: #4CAF50; }
+    .bg-unavailable { background-color: #9E9E9E; }
+    .inlineCalendar {
+        display: none;
+        position: absolute;
+        z-index: 9999;
+        width: 480px;
+        right: 0;
+        top: 100%;
+        background: #fff;
+        border: 2px solid #FF8E53;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+</style>
+</head>
+<body>
+    <div class="search-section">
+        <form th:action="@{/view/courses}" method="get">
+            <input type="text" name="teacherName" th:value="${currentTeacherName}" placeholder="搜尋老師姓名...">
+
+            <!-- 第一層：大類別 -->
+            <select name="subjectCategory" id="subjectCategory">
+                <option value="">所有科目</option>
+                <option value="10" th:selected="${currentSubjectCategory == 10}">年級課程</option>
+                <option value="20" th:selected="${currentSubjectCategory == 20}">檢定與升學</option>
+                <option value="30" th:selected="${currentSubjectCategory == 30}">其他</option>
+            </select>
+
+            <!-- 第二層：具體科目（由 JS 控制顯示/隱藏與選項） -->
+            <select name="subject" id="subjectDetail" style="display:none;">
+                <option value="">所有小類</option>
+            </select>
+
+            <select name="priceRange">
+                <option value="">所有價格</option>
+                <option value="300-500" th:selected="${currentPriceRange == '300-500'}">$300 - $500</option>
+                <option value="501-700" th:selected="${currentPriceRange == '501-700'}">$501 - $700</option>
+                <option value="701-900" th:selected="${currentPriceRange == '701-900'}">$701 - $900</option>
+            </select>
+
+            <select name="weekday">
+                <option value="">所有星期</option>
+                <option value="1" th:selected="${currentWeekday == 1}">星期一</option>
+                <option value="2" th:selected="${currentWeekday == 2}">星期二</option>
+                <option value="3" th:selected="${currentWeekday == 3}">星期三</option>
+                <option value="4" th:selected="${currentWeekday == 4}">星期四</option>
+                <option value="5" th:selected="${currentWeekday == 5}">星期五</option>
+                <option value="6" th:selected="${currentWeekday == 6}">星期六</option>
+                <option value="7" th:selected="${currentWeekday == 7}">星期日</option>
+            </select>
+
+            <select name="timeSlot">
+                <option value="">所有時段</option>
+                <option value="morning"   th:selected="${currentHour == 'morning'}">上午 (9-13)</option>
+                <option value="afternoon" th:selected="${currentHour == 'afternoon'}">下午 (13-17)</option>
+                <option value="evening"   th:selected="${currentHour == 'evening'}">晚上 (17-21)</option>
+            </select>
+
+            <button type="submit">立即搜尋</button>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>老師</th>
+                <th>課程標題</th>
+                <th>科目</th>
+                <th>介紹</th>
+                <th>課表</th>
+                <th>價格</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="c : ${courses}">
+                <td>
+                    <a th:href="@{/tutor/{id}(id=${c.tutorId})}" style="text-decoration:none; color:inherit;">
+                        <img th:if="${c.avatarUrl != null}" th:src="${c.avatarUrl}"
+                             style="width:40px; height:40px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 4px;">
+                        <div th:text="${c.teacherName}" style="font-weight:bold;"></div>
+                        <div th:if="${c.headline != null}" th:text="${c.headline}"
+                             style="font-size:11px; color:#888; margin-top:2px;"></div>
+                    </a>
+                </td>
+                <td th:text="${c.courseName}"></td>
+                <td th:text="${c.subject == 11 ? '低年級' :
+                               c.subject == 12 ? '中年級' :
+                               c.subject == 13 ? '高年級' :
+                               c.subject == 21 ? 'GEPT' :
+                               c.subject == 22 ? 'YLE' :
+                               c.subject == 23 ? '國中先修' : '其他'}"></td>
+                <td th:text="${c.description}"></td>
+                <td style="position:relative;">
+                    <!-- 觸發按鈕 -->
+                    <div class="schedule-trigger"
+                         th:attr="onclick=|toggleCalendar(event, this, '${c.teacherName}', ${c.tutorId})|">
+                        <span style="color: #6C63FF; cursor: pointer; border-bottom: 1px dashed #6C63FF;">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">calendar_month</span>
+                            查看課表
+                        </span>
+                    </div>
+                    <!-- 每個課程列獨立的課表視窗，互不干擾 -->
+                    <div class="inlineCalendar">
+                        <header style="padding:8px 12px; background:linear-gradient(to right,#6C63FF,#FF8E53); color:#fff;">
+                            <strong class="cal-teacher-name"></strong>
+                            <span style="font-size:11px; opacity:.85; margin-left:6px;">每週固定開放時段</span>
+                        </header>
+                        <div style="padding:8px; background:#fff;">
+                            <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center;">
+                                <thead>
+                                    <tr>
+                                        <th>時間</th><th>Mon</th><th>Tue</th><th>Wed</th>
+                                        <th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="cal-body"></tbody>
+                            </table>
+                            <div style="margin-top:6px; font-size:10px; display:flex; gap:12px; justify-content:center; border-top:1px solid #eee; padding-top:6px;">
+                                <span><span style="display:inline-block;width:10px;height:10px;background:#4CAF50;border-radius:50%;"></span> 開放</span>
+                                <span><span style="display:inline-block;width:10px;height:10px;background:#9E9E9E;border-radius:50%;"></span> 不開放</span>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td th:text="${'$' + c.price}"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 分頁導航 -->
+    <div class="pagination">
+        <ul>
+            <li th:if="${currentPage > 0}">
+                <a th:href="@{/view/courses(page=${currentPage - 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}">
+                    上一頁
+                </a>
+            </li>
+            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                <a th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}"
+                   th:text="${i + 1}"
+                   th:classappend="${i == currentPage} ? 'active' : ''">
+                </a>
+            </li>
+            <li th:if="${currentPage < totalPages - 1}">
+                <a th:href="@{/view/courses(page=${currentPage + 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}">
+                    下一頁
+                </a>
+            </li>
+        </ul>
+    </div>
+
+
+    <script>
+        // ── 科目兩層聯動 ──────────────────────────────────────────────
+        // 新增科目只需改這裡
+        const subjectMap = {
+            10: [
+                { value: '11', label: '低年級' },
+                { value: '12', label: '中年級' },
+                { value: '13', label: '高年級' }
+            ],
+            20: [
+                { value: '21', label: 'GEPT' },
+                { value: '22', label: 'YLE' },
+                { value: '23', label: '國中先修' }
+            ],
+            30: [
+                { value: '31', label: '其他' }
+            ]
+        };
+
+        const categoryEl = document.getElementById('subjectCategory');
+        const detailEl   = document.getElementById('subjectDetail');
+
+        function renderDetailOptions(categoryVal, selectedSubject) {
+            const options = subjectMap[categoryVal] || [];
+            detailEl.innerHTML = '<option value="">所有小類</option>';
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.label;
+                if (String(selectedSubject) === opt.value) el.selected = true;
+                detailEl.appendChild(el);
+            });
+        }
+
+        function onCategoryChange(sel) {
+            const val = parseInt(sel.value);
+            if (val && subjectMap[val]) {
+                renderDetailOptions(val, null);
+                detailEl.style.display = '';
+            } else {
+                detailEl.style.display = 'none';
+                detailEl.value = '';
+            }
+        }
+
+        // 頁面載入時：若 Server 回傳了上次的選擇，自動還原兩層狀態
+        (function restoreState() {
+            const cat     = /*[[${currentSubjectCategory}]]*/ null;
+            const subject = /*[[${currentSubject}]]*/ null;
+
+            if (cat) {
+                categoryEl.value = cat;
+                renderDetailOptions(cat, subject);
+                detailEl.style.display = '';
+            }
+        })();
+
+        categoryEl.addEventListener('change', function () {
+            onCategoryChange(this);
+        });
+        // ─────────────────────────────────────────────────────────────
+    </script>
+
+    <script>
+        // 每列課程各自獨立的課表，互不干擾
+        // scheduleCache: 避免同一老師重複打 API
+        const scheduleCache = {};
+
+        function renderGrid(bodyEl, data) {
+            bodyEl.innerHTML = '';
+            for (let hour = 9; hour <= 21; hour++) {
+                const row = document.createElement('tr');
+                const timeCell = document.createElement('td');
+                timeCell.textContent = hour + ':00';
+                timeCell.style.padding = '2px 6px';
+                row.appendChild(timeCell);
+                for (let d = 1; d <= 7; d++) {
+                    const cell = document.createElement('td');
+                    cell.style.height = '18px';
+                    cell.style.width = '24px';
+                    cell.className = (data[d] && data[d].includes(hour))
+                        ? 'bg-available' : 'bg-unavailable';
+                    row.appendChild(cell);
+                }
+                bodyEl.appendChild(row);
+            }
+        }
+
+        function toggleCalendar(e, triggerEl, teacherName, tutorId) {
+            e.stopPropagation();
+
+            const td     = triggerEl.closest('td');
+            const calDiv = td.querySelector('.inlineCalendar');
+            const nameEl = td.querySelector('.cal-teacher-name');
+            const bodyEl = td.querySelector('.cal-body');
+
+            // 點擊同一個 → 切換顯示/隱藏
+            if (calDiv.style.display === 'block') {
+                calDiv.style.display = 'none';
+                return;
+            }
+
+            // 先收起其他所有課表
+            document.querySelectorAll('.inlineCalendar').forEach(el => {
+                el.style.display = 'none';
+            });
+
+            nameEl.textContent = teacherName + ' 的課表';
+            calDiv.style.display = 'block';
+
+            // 有快取就直接用，否則打 API
+            if (scheduleCache[tutorId]) {
+                renderGrid(bodyEl, scheduleCache[tutorId]);
+            } else {
+                bodyEl.innerHTML = '<tr><td colspan="8" style="padding:10px;color:#999;">載入中...</td></tr>';
+                fetch(`/view/teacher_schedule/${tutorId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        scheduleCache[tutorId] = data;
+                        renderGrid(bodyEl, data);
+                    });
+            }
+        }
+
+        // 點擊課表以外的地方 → 全部收起
+        document.addEventListener('click', function () {
+            document.querySelectorAll('.inlineCalendar').forEach(el => {
+                el.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

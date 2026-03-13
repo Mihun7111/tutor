@@ -35,16 +35,43 @@
         <form th:action="@{/view/courses}" method="get">
             <input type="text" name="teacherName" th:value="${currentTeacherName}" placeholder="搜尋老師姓名...">
 
-			<select id="categorySelect" name="subjectCategory" onchange="updateSubjects()" class="rounded-xl border-slate-200">
-			    <option value="">全部類別</option>
-			    <option value="10" th:selected="${currentSubjectCategory == 10}">年級課程</option>
-			    <option value="20" th:selected="${currentSubjectCategory == 20}">檢定升學</option>
-			    <option value="30" th:selected="${currentSubjectCategory == 30}">其他</option>
-			</select>
-			
-			<select id="subjectSelect" name="subject" class="rounded-xl border-slate-200">
-			    <option value="">具體科目 (可不選)</option>
-			</select>
+            <!-- 第一層：大類別 -->
+            <select name="subjectCategory" id="subjectCategory">
+                <option value="">所有科目</option>
+                <option value="10" th:selected="${currentSubjectCategory == 10}">年級課程</option>
+                <option value="20" th:selected="${currentSubjectCategory == 20}">檢定與升學</option>
+                <option value="30" th:selected="${currentSubjectCategory == 30}">其他</option>
+            </select>
+
+            <!-- 第二層：具體科目（Thymeleaf 伺服器端控制初始顯示，JS 控制動態切換） -->
+            <select name="subject" id="subjectDetail"
+                    th:style="${currentSubjectCategory != null} ? '' : 'display:none'">
+                <option value="">所有小類</option>
+                <!-- 年級課程 -->
+                <option value="11"
+                        th:if="${currentSubjectCategory == 10 or currentSubject == 11}"
+                        th:selected="${currentSubject == 11}">低年級</option>
+                <option value="12"
+                        th:if="${currentSubjectCategory == 10 or currentSubject == 12}"
+                        th:selected="${currentSubject == 12}">中年級</option>
+                <option value="13"
+                        th:if="${currentSubjectCategory == 10 or currentSubject == 13}"
+                        th:selected="${currentSubject == 13}">高年級</option>
+                <!-- 檢定與升學 -->
+                <option value="21"
+                        th:if="${currentSubjectCategory == 20 or currentSubject == 21}"
+                        th:selected="${currentSubject == 21}">GEPT</option>
+                <option value="22"
+                        th:if="${currentSubjectCategory == 20 or currentSubject == 22}"
+                        th:selected="${currentSubject == 22}">YLE</option>
+                <option value="23"
+                        th:if="${currentSubjectCategory == 20 or currentSubject == 23}"
+                        th:selected="${currentSubject == 23}">國中先修</option>
+                <!-- 其他 -->
+                <option value="31"
+                        th:if="${currentSubjectCategory == 30 or currentSubject == 31}"
+                        th:selected="${currentSubject == 31}">其他</option>
+            </select>
 
             <select name="priceRange">
                 <option value="">所有價格</option>
@@ -125,18 +152,18 @@
     <div class="pagination">
         <ul>
             <li th:if="${currentPage > 0}">
-                <a th:href="@{/view/courses(page=${currentPage - 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}">
+                <a th:href="@{/view/courses(page=${currentPage - 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subjectCategory=${currentSubjectCategory}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}">
                     上一頁
                 </a>
             </li>
             <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                <a th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}"
+                <a th:href="@{/view/courses(page=${i}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subjectCategory=${currentSubjectCategory}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}"
                    th:text="${i + 1}"
                    th:classappend="${i == currentPage} ? 'active' : ''">
                 </a>
             </li>
             <li th:if="${currentPage < totalPages - 1}">
-                <a th:href="@{/view/courses(page=${currentPage + 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}">
+                <a th:href="@{/view/courses(page=${currentPage + 1}, teacherName=${currentTeacherName}, courseName=${currentCourseName}, subjectCategory=${currentSubjectCategory}, subject=${currentSubject}, priceRange=${currentPriceRange}, weekday=${currentWeekday}, timeSlot=${currentHour})}">
                     下一頁
                 </a>
             </li>
@@ -177,13 +204,73 @@
 	</div>
 
     <script>
+        // ── 科目兩層聯動 ──────────────────────────────────────────────
+        // 新增科目只需改這裡
+        const subjectMap = {
+            10: [
+                { value: '11', label: '低年級' },
+                { value: '12', label: '中年級' },
+                { value: '13', label: '高年級' }
+            ],
+            20: [
+                { value: '21', label: 'GEPT' },
+                { value: '22', label: 'YLE' },
+                { value: '23', label: '國中先修' }
+            ],
+            30: [
+                { value: '31', label: '其他' }
+            ]
+        };
+
+        const categoryEl = document.getElementById('subjectCategory');
+        const detailEl   = document.getElementById('subjectDetail');
+
+        function renderDetailOptions(categoryVal, selectedSubject) {
+            const options = subjectMap[categoryVal] || [];
+            detailEl.innerHTML = '<option value="">所有小類</option>';
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.label;
+                if (String(selectedSubject) === opt.value) el.selected = true;
+                detailEl.appendChild(el);
+            });
+        }
+
+        function onCategoryChange(sel) {
+            const val = parseInt(sel.value);
+            if (val && subjectMap[val]) {
+                renderDetailOptions(val, null);
+                detailEl.style.display = '';
+            } else {
+                detailEl.style.display = 'none';
+                detailEl.value = '';
+            }
+        }
+
+        // 頁面載入時：Thymeleaf 已在伺服器端還原 option 與 selected
+        // JS 只需把 DOM 上已選中的小類值同步回 detailEl.value
+        (function restoreState() {
+            // 找出 Thymeleaf 已渲染為 selected 的小類 option
+            const selectedOpt = detailEl.querySelector('option[selected]');
+            if (selectedOpt) {
+                detailEl.value = selectedOpt.value;
+            }
+        })();
+
+        categoryEl.addEventListener('change', function () {
+            onCategoryChange(this);
+        });
+        // ─────────────────────────────────────────────────────────────
+    </script>
+
+    <script>
         const cal = document.getElementById('floatingCalendar');
         const calName = document.getElementById('calTeacherName');
         const calGrid = document.getElementById('calendarGrid');
 
         let isPinned = false; // 是否已固定在畫面中央
-		
-        // 載入老師課表資料
+
         function loadSchedule(tutorId) {
             fetch(`/view/teacher_schedule/${tutorId}`)
                 .then(response => response.json())
@@ -274,25 +361,6 @@
                 cal.style.pointerEvents = 'none';
             }
         });
-        
-        // 科目選單資料
-        const subjectData = {
-        	    "10": [{val: 11, text: "低年級"}, {val: 12, text: "中年級"}, {val: 13, text: "高年級"}],
-        	    "20": [{val: 21, text: "GEPT"}, {val: 22, text: "YLE"}, {val: 23, text: "國中先修"}],
-        	    "30": [{val: 31, text: "其他"}]
-        	};
-
-       	function updateSubjects() {
-       	    const cat = document.getElementById('categorySelect').value;
-       	    const subSelect = document.getElementById('subjectSelect');
-       	    subSelect.innerHTML = '<option value="">具體科目 (可不選)</option>';
-       	    
-       	    if (subjectData[cat]) {
-       	        subjectData[cat].forEach(item => {
-       	            subSelect.innerHTML += `<option value="${item.val}">${item.text}</option>`;
-       	        });
-       	    }
-       	}
     </script>
 </body>
 </html>

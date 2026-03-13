@@ -33,7 +33,8 @@ public class CourseViewController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String teacherName,
             @RequestParam(required = false) String courseName,
-            @RequestParam(required = false) Integer subject,
+            @RequestParam(required = false) Integer subjectCategory, // 大類別
+            @RequestParam(required = false) Integer subject,         // 具體科目
             @RequestParam(required = false) String priceRange,
             @RequestParam(required = false) Integer weekday, // 新增
             @RequestParam(required = false) String timeSlot,    // 新增
@@ -43,7 +44,7 @@ public class CourseViewController {
 
         // 1. 執行帶條件的查詢
         Page<Course> coursePage = courseRepo.findAll(
-            CourseSpec.filterCourses(teacherName, courseName, subject, priceRange, weekday, timeSlot),
+            CourseSpec.filterCourses(teacherName, courseName, subjectCategory, subject, priceRange, weekday, timeSlot),
             pageable
         );
 
@@ -68,12 +69,13 @@ public class CourseViewController {
         // 保留搜尋狀態
         model.addAttribute("currentTeacherName", teacherName);
         model.addAttribute("currentCourseName", courseName);
+        model.addAttribute("currentSubjectCategory", subjectCategory);
         model.addAttribute("currentSubject", subject);
         model.addAttribute("currentPriceRange", priceRange);
         model.addAttribute("currentWeekday", weekday);
         model.addAttribute("currentHour", timeSlot);
 
-        return "courseList3";
+        return "courseList5";
     }
     @Autowired 
     private TutorScheduleRepo scheduleRepo;
