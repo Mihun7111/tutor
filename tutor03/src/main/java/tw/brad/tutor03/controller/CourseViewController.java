@@ -53,8 +53,8 @@ public class CourseViewController {
             course.getId(),
             course.getTutor().getId(),             // tutorId，用於跳轉老師頁面
             course.getTutor().getUser().getName(), // 從 Tutor -> User 拿姓名
-            course.getTutor().getAvatarUrl(),      // 拿頭像
-            course.getTutor().getHeadline(),       // 拿標題
+            course.getTutor().getAvatar(),      // 拿頭像
+            course.getTutor().getTitle(),       // 拿標題
             course.getName(),
             course.getSubject(),
             course.getDescription(),

@@ -1,5 +1,6 @@
 package tw.brad.tutor03.entity;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -12,10 +13,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "reviews")
-@Data
+@Getter
+@Setter
 public class Review {
 
     @Id
@@ -32,9 +36,9 @@ public class Review {
     @Column(nullable = false)
     private Integer rating; // 評分 1–5 分
 
-    @Column(length = 1000)
+    @Column(nullable = true, length = 1000)
     private String comment; // 評論內容
 
-    @Column(name = "updated_at", updatable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "updated_at", nullable = true,  insertable = false, updatable = false)
+    private Instant updatedAt;
 }

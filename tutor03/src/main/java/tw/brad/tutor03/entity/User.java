@@ -1,5 +1,6 @@
 package tw.brad.tutor03.entity;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -10,10 +11,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 public class User {
 
     @Id
@@ -32,14 +36,14 @@ public class User {
     private LocalDate birthday;
 
     @Column(nullable = false)
-    private Integer role; // 1: 學生, 2: 老師
+    private Integer role; // 1: 學生, 2: 老師, 3:admin
 
-    @Column(name = "is_admin")
-    private Boolean isAdmin = false;
+    @Column(nullable=false)
+    private Integer wallet;
 
-    @Column(nullable = false)
-    private Long wallet = 0L;
-
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private Instant createdAt;
+    
+    @Column(name = "updated_at", insertable = false, updatable = true)
+    private Instant updatedAt;
 }

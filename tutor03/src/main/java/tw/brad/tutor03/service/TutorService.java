@@ -64,12 +64,12 @@ public class TutorService {
      * 更新老師的標題與頭像（用於個人設定頁面）
      */
     @Transactional
-    public void updateTutorProfile(Long id, String headline, String avatarUrl) {
+    public void updateTutorProfile(Long id, String title, String avatar) {
         Tutor tutor = tutorRepo.findById(id)
             .orElseThrow(() -> new RuntimeException("找不到該老師"));
         
-        tutor.setHeadline(headline);
-        tutor.setAvatarUrl(avatarUrl);
+        tutor.setTitle(title);
+        tutor.setAvatar(avatar);
         tutorRepo.save(tutor);
     }
 }

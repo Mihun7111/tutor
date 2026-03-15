@@ -11,10 +11,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "tutors")
-@Data
+@Getter
+@Setter
 public class Tutor {
 
     @Id
@@ -25,17 +28,26 @@ public class Tutor {
     @JoinColumn(name = "id")
     private User user;
 
-    @Column(length = 255)
-    private String headline; // 吸睛標題，如「TESL認證英語教師」
-
-    @Column(name = "avatar_url", length = 500)
-    private String avatarUrl;
-
-    @Column(columnDefinition = "TEXT")
-    private String intro; // 自我介紹
+    @Column(length = 50)
+    private String title;  // 吸睛標題，如「TESL認證英語教師」
 
     @Column(length = 500)
-    private String certificate; // 專業證照
+    private String avatar;
+
+    @Column(length = 1000)
+    private String intro; // 自我介紹
+
+    @Column(name ="certificate_1" ,length = 500)
+    private String certificate1;//位址
+
+    @Column(name ="certificate_name_1" ,length = 500)
+    private String certificateName1;//證照名稱
+
+    @Column(name ="certificate_2" ,length = 500)
+    private String certificate2;//位址
+    
+    @Column(name ="certificate_name_2" ,length = 500)
+    private String certificateName2;//證照名稱
 
     @Column(name = "video_url_1", length = 500)
     private String videoUrl1; // 自我介紹影片

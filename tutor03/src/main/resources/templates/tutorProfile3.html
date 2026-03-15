@@ -30,15 +30,15 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-3 text-center">
-                <img th:src="${tutor.avatarUrl != null ? tutor.avatarUrl : 'https://via.placeholder.com/150'}" 
+                <img th:src="${tutor.avatar != null ? tutor.avatar : 'https://via.placeholder.com/150'}" 
                      alt="老師頭像" class="rounded-circle avatar-lg">
             </div>
             <div class="col-md-9">
                 <h1 class="display-6 fw-bold mb-2" th:text="${tutor.user.name}">老師姓名</h1>
-                <h4 class="text-primary mb-3" th:text="${tutor.headline}">吸睛標題內容</h4>
+                <h4 class="text-primary mb-3" th:text="${tutor.title}">吸睛標題內容</h4>
                 <div>
                     <span class="badge bg-light text-dark border me-1">專業認證</span>
-                    <span class="badge bg-info text-white" th:text="${'教學經驗: ' + (2026 - tutor.user.createdAt.year) + ' 年'}">經驗計算</span>
+                    <span class="badge bg-info text-white" th:text="${'教學經驗: ' + (2026 - tutor.user.createdAt.atZone(T(java.time.ZoneId).of('Asia/Taipei')).year) + ' 年'}">經驗計算</span>
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
                 <div class="card bg-light border-0 mt-4">
                     <div class="card-body">
                         <h5 class="fw-bold"><i class="fa-solid fa-certificate me-2 text-warning"></i>專業證照</h5>
-                        <p class="mb-0 text-muted" th:text="${tutor.certificate}">證照清單...</p>
+                        <p class="mb-0 text-muted" th:text="${tutor.certificateName1}">證照清單...</p>
                     </div>
                 </div>
             </section>

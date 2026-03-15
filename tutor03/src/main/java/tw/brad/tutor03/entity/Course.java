@@ -9,11 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "courses")
-@Data
+@Getter
+@Setter
 public class Course {
 
     @Id
@@ -37,12 +39,12 @@ public class Course {
     @Column(nullable = false)
     private Integer subject;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1000)
     private String description; // 課程介紹
 
     @Column(nullable = false)
     private Integer price; // 單堂價格（元）
 
     @Column(name = "is_active", nullable = false)
-    private Integer isActive = 1; // 1: 上架, 0: 下架
+    private Integer active = 1; // 1: 上架, 0: 下架
 }
